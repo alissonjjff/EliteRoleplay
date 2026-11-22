@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EliteRoleplay — plugin de roleplay completo para Rust (Oxide/uMod)</title>
+<meta name="description" content="Plugin Oxide/uMod para servidores de Rust Roleplay: economia de jogadores, banco, profissões, loja de NPC, governo, polícia, hospital, bocas e facções, celular e mais, em um único plugin.">
+<meta name="theme-color" content="#0a100e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a100e; --bg2:#0f1815; --panel:#121d19; --line:#24362f;
+  --text:#e7efe9; --muted:#9db0a5; --gold:#d6aa3c; --green:#3ecb8e;
+  --head:'Barlow Condensed','Arial Narrow',Impact,sans-serif; --body:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font:17px/1.6 var(--body);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+img{max-width:100%;display:block}
+.wrap{width:min(1160px,92vw);margin:0 auto}
+h1,h2,h3{font-family:var(--head);text-transform:uppercase;letter-spacing:.02em;line-height:1.02}
+
+header.top{position:sticky;top:0;z-index:30;background:rgba(10,16,14,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:16px}
+.brand{font:800 24px var(--head);letter-spacing:.04em;text-transform:uppercase;text-decoration:none}
+.brand b{color:var(--gold)}
+nav{display:flex;gap:22px;align-items:center;font:600 15px var(--head);letter-spacing:.08em;text-transform:uppercase}
+nav a{text-decoration:none;color:var(--muted);padding:6px 0;border-bottom:2px solid transparent}
+nav a:hover,nav a:focus-visible{color:var(--text);border-color:var(--gold);outline:none}
+nav a.cta{color:var(--bg);background:var(--gold);padding:8px 16px;border:0}
+nav a.cta:hover{background:#e8bd4d}
+@media(max-width:900px){nav a:not(.cta){display:none}}
+
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(10,16,14,.55),var(--bg)),url(img/bannerRP_inicio.jpg) center top/cover no-repeat}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:30px;align-items:center;padding:84px 0 70px}
+@media(max-width:900px){.hero .wrap{grid-template-columns:1fr;padding:60px 0 50px}}
+.tag{font:700 15px var(--head);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.hero h1{font-size:clamp(40px,5.6vw,76px);font-weight:800}
+.hero h1 span{color:var(--gold)}
+.hero p.lead{max-width:54ch;font-size:20px;color:#cfdcd4;margin:22px 0 28px}
+.actions{display:flex;flex-wrap:wrap;gap:14px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 26px;font:700 18px var(--head);letter-spacing:.1em;text-transform:uppercase;
+  text-decoration:none;border:2px solid var(--gold);color:var(--bg);background:var(--gold);cursor:pointer;transition:transform .15s,background .15s}
+.btn:hover,.btn:focus-visible{transform:translateY(-2px);background:#e8bd4d;outline:none}
+.btn.ghost{background:transparent;color:var(--text);border-color:#3b5249}
+.btn.ghost:hover,.btn.ghost:focus-visible{border-color:var(--gold);background:rgba(214,170,60,.08)}
+.badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.badge{font:700 13px var(--head);letter-spacing:.14em;text-transform:uppercase;color:var(--green);border:1px solid rgba(62,203,142,.4);background:rgba(62,203,142,.06);padding:5px 11px}
+.badge.warn{color:var(--gold);border-color:rgba(214,170,60,.5);background:rgba(214,170,60,.07)}
+
+/* celular */
+.phone{position:relative;width:min(300px,70vw);margin:0 auto;aspect-ratio:480/1035;filter:drop-shadow(0 30px 50px rgba(0,0,0,.6))}
+.phone .scr{position:absolute;inset:2.2% 5.6% 2.2% 5.6%;border-radius:11%;overflow:hidden;background:url(img/celularRP_wallpaper1.png) center/cover}
+.phone .frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.phone .clock{position:absolute;top:9%;left:0;right:0;text-align:center;font:700 14cqw var(--head)}
+.phone .apps{position:absolute;left:7%;right:7%;top:30%;display:grid;grid-template-columns:repeat(3,1fr);gap:9% 6%}
+.phone .apps div{text-align:center;font:600 3.9cqw var(--head);letter-spacing:.06em;text-transform:uppercase;color:#dfe9e3}
+.phone .apps img{width:78%;margin:0 auto 6%;border-radius:22%}
+.phone .toast{position:absolute;left:6%;right:6%;bottom:6%;background:rgba(10,16,14,.86);border:1px solid rgba(62,203,142,.5);padding:3.4cqw 4cqw;font:600 4.2cqw var(--body);color:#e7efe9}
+.phone .toast b{color:var(--green);font-family:var(--head);letter-spacing:.08em;text-transform:uppercase}
+.phone .scr{container-type:inline-size}
+
+/* seções */
+section{padding:90px 0;border-bottom:1px solid var(--line)}
+section.alt{background:var(--bg2)}
+.eyebrow{font:700 14px var(--head);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+section h2{font-size:clamp(36px,5.6vw,60px);font-weight:800;margin-bottom:16px}
+section .intro{max-width:64ch;color:var(--muted);font-size:19px;margin-bottom:44px}
+
+.feat{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--gold);padding:24px 22px;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-3px);border-color:var(--green)}
+.card img{width:46px;height:46px;margin-bottom:12px}
+.card h3{font-size:26px;margin-bottom:6px}
+.card p{color:var(--muted);font-size:16px}
+.card ul{list-style:none;margin-top:10px;display:grid;gap:5px;color:#cfdcd4;font-size:15px}
+.card li{padding-left:16px;position:relative}
+.card li::before{content:"";position:absolute;left:0;top:.7em;width:8px;height:2px;background:var(--gold)}
+
+/* galeria */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.tabs button{font:700 16px var(--head);letter-spacing:.1em;text-transform:uppercase;padding:10px 18px;background:transparent;color:var(--muted);border:1px solid var(--line);cursor:pointer}
+.tabs button:hover{color:var(--text);border-color:#3b5249}
+.tabs button[aria-selected=true]{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+.shot{display:none;grid-template-columns:1.6fr .8fr;gap:28px;align-items:center}
+.shot.on{display:grid}
+@media(max-width:900px){.shot.on{grid-template-columns:1fr}}
+.shot h3{font-size:34px;margin-bottom:10px}
+.shot p{color:var(--muted);margin-bottom:14px}
+.shot ul{list-style:none;display:grid;gap:8px;color:#cfdcd4}
+.shot li{padding-left:24px;position:relative}
+.shot li::before{content:"";position:absolute;left:0;top:.72em;width:12px;height:3px;background:var(--gold)}
+.screen{position:relative;container-type:inline-size;width:100%;background-size:cover;background-position:center;border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.5);overflow:hidden}
+.screen>*{position:absolute}
+.cap{font:600 14px var(--head);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+
+/* conteúdo dos mockups (tudo em cqw: escala com a imagem) */
+.t-title{font:800 3.4cqw var(--head);text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;justify-content:space-between;align-items:center;gap:2cqw}
+.mono{font-family:var(--mono)}
+/* loja */
+.s-loja{aspect-ratio:2000/1200;background-image:url(img/lojaRP_fundo1.jpg);color:#29e085}
+.s-loja .ttl{left:14%;top:12%;font:800 3.6cqw var(--head);letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 1.4cqw rgba(41,224,133,.55)}
+.s-loja .col{top:22%;width:33%}
+.s-loja .col.l{left:14%}.s-loja .col.r{left:53%}
+.s-loja .col h4{font:800 2.6cqw var(--head);letter-spacing:.1em;text-transform:uppercase;border-bottom:.2cqw solid #29e085;padding-bottom:.6cqw;margin-bottom:.8cqw}
+.s-loja .it{display:grid;grid-template-columns:1fr auto auto;gap:1.6cqw;font:600 2.15cqw var(--mono);padding:1cqw 0;border-bottom:.1cqw dashed rgba(41,224,133,.3)}
+.s-loja .it i{font-style:normal;opacity:.7}
+.s-loja .out{color:#ff7a6e;text-decoration:line-through}
+/* agência */
+.s-ag{aspect-ratio:1920/1136;background-image:url(img/agenciaRP_fundo2.jpg);color:#10172c}
+.s-ag .tt{left:6.5%;top:3.5%}.s-ag .tt small{display:block;font:700 1.5cqw var(--head);letter-spacing:.2em;color:#a03020}
+.s-ag .tt b{font:800 2.7cqw var(--head);text-transform:uppercase}
+.s-ag .rows{left:12%;right:8%;top:24%}
+.s-ag .jr{display:grid;grid-template-columns:14cqw 1fr 14cqw;gap:2cqw;align-items:center;height:5.9cqw}
+.s-ag .tick{left:5.9%;top:86%;font:800 3.4cqw var(--body);color:#1a7a2a;line-height:1}
+.s-ag .jn{font:800 2.1cqw var(--head);text-transform:uppercase;color:#10246a}
+.s-ag .jd{font:500 1.7cqw var(--body);color:#1b1f2c}
+.s-ag .jb{background:#1b2f78;color:#fff;font:700 1.7cqw var(--head);letter-spacing:.1em;text-transform:uppercase;text-align:center;padding:.9cqw 0}
+.s-ag .jb.me{background:none;color:#1a7a2a}
+/* painéis escuros genéricos */
+.s-dk{aspect-ratio:1920/1136;color:#eef3ef}
+.s-dk .tt{left:7%;top:8%;font:800 3.8cqw var(--head);text-transform:uppercase;letter-spacing:.04em}
+.s-dk .sub{left:7%;top:19%;font:600 1.8cqw var(--head);letter-spacing:.2em;text-transform:uppercase;opacity:.75}
+.s-dk .pnl{background:rgba(6,10,14,.62);border:.15cqw solid rgba(255,255,255,.14);padding:1.6cqw 2cqw}
+.s-dk .pnl h4{font:800 1.9cqw var(--head);letter-spacing:.14em;text-transform:uppercase;opacity:.8;margin-bottom:1cqw}
+.s-dk .big{font:800 6cqw var(--head);line-height:1}
+.s-dk .ln{display:flex;justify-content:space-between;font:600 1.8cqw var(--body);padding:.7cqw 0;border-bottom:.1cqw solid rgba(255,255,255,.1)}
+.bar{height:1.4cqw;background:rgba(255,255,255,.12);margin-top:.5cqw}
+.bar i{display:block;height:100%}
+.s-cofre{background-image:url(img/cofreRP_fundo2.jpg)}
+.s-cofre .big{color:#e6c05a}
+.s-eleicao{background-image:url(img/eleicaoRP_fundo4.jpg)}
+.s-eleicao .bar i{background:#4aa4e6}
+.s-pol{aspect-ratio:1536/907;background-image:url(img/policiaRP_fundo.jpg)}
+.s-hosp{background-image:url(img/hospitalRP_fundo1.jpg)}
+.s-fac{background-image:url(img/faccoesRP_fundo1.jpg)}
+.s-fac .bar i{background:#d6aa3c}
+.tg{display:inline-block;font:700 1.4cqw var(--head);letter-spacing:.1em;text-transform:uppercase;padding:.2cqw 1cqw;border:.15cqw solid currentColor}
+.ok{color:#5fe0a0}.bad{color:#ff8a7e}.gd{color:#e6c05a}
+/* boca */
+.s-boca{aspect-ratio:1040/800;background-image:url(img/bocaRP_fundo1.jpg);color:#eef3ef;max-width:520px}
+.s-boca .tt{left:8%;top:7%;font:800 6cqw var(--head);text-transform:uppercase;color:#d6aa3c}
+.s-boca .ln{left:8%;right:8%;display:flex;justify-content:space-between;font:600 3.6cqw var(--body);padding:1.1cqw 0;border-bottom:.2cqw solid rgba(255,255,255,.12)}
+.bocabar{position:relative;aspect-ratio:930/252;background:url(img/barraRP_boca15.png) center/100% 100%;margin-top:22px;max-width:520px;container-type:inline-size}
+.bocabar span{position:absolute;left:19%;top:14%;font:800 5cqw var(--head);letter-spacing:.14em;text-transform:uppercase;color:#f2f2f2}
+.bocabar i{position:absolute;left:18.5%;top:41%;width:67%;height:21.5%;background:linear-gradient(90deg,#d97a1c,#f0a23a);width:42%;box-shadow:0 0 12px rgba(240,162,58,.5)}
+
+/* loop e passos */
+.loop{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;counter-reset:l}
+.loop div{position:relative;padding:26px 22px;border:1px solid var(--line);background:var(--panel);margin:-1px 0 0 -1px;counter-increment:l}
+.loop div::before{content:counter(l,decimal-leading-zero);font:800 46px var(--head);color:rgba(214,170,60,.28);position:absolute;right:14px;top:4px;line-height:1}
+.loop h3{font-size:25px;margin-bottom:6px}
+.loop p{color:var(--muted);font-size:16px}
+
+/* tabela de requisitos */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:start}
+@media(max-width:860px){.two{grid-template-columns:1fr}}
+.box{background:var(--panel);border:1px solid var(--line);padding:28px}
+.box h3{font-size:30px;margin-bottom:14px}
+.box ol,.box ul{padding-left:22px;display:grid;gap:10px;color:#cfdcd4}
+code{font:600 .88em var(--mono);background:rgba(255,255,255,.07);padding:2px 7px;border:1px solid var(--line)}
+.note{border-left:4px solid var(--gold);background:rgba(214,170,60,.07);padding:16px 20px;color:#dfe8e2;margin-top:22px}
+details{background:var(--panel);border:1px solid var(--line);margin-bottom:10px}
+summary{cursor:pointer;padding:18px 22px;font:700 21px var(--head);letter-spacing:.05em;text-transform:uppercase;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";float:right;color:var(--gold)}
+details[open] summary::after{content:"–"}
+details p{padding:0 22px 20px;color:var(--muted)}
+.cta-band{text-align:center}
+.cta-band .actions{justify-content:center}
+footer{padding:42px 0;color:var(--muted);font-size:15px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.card{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#topo">Elite<b>Roleplay</b></a>
+    <nav aria-label="Seções">
+      <a href="#recursos">Recursos</a>
+      <a href="#telas">Telas</a>
+      <a href="#como">Como funciona</a>
+      <a href="#instalar">Instalação</a>
+      <a href="#faq">Dúvidas</a>
+      <a class="cta" id="dl-top" href="#comprar">Comprar</a>
+    </nav>
+  </div>
+</header>
+
+<main id="topo">
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <div class="tag">Plugin Oxide / uMod · Rust</div>
+      <h1><span>Roleplay</span> completo em um só plugin</h1>
+      <p class="lead">Economia de jogadores, banco, profissões, lojas, governo, polícia, hospital, bocas e facções, celular e muito mais. Tudo integrado, configurável e pronto para ligar no seu servidor.</p>
+      <div class="actions">
+        <a class="btn" id="dl-hero" href="#instalar">Comprar o plugin</a>
+        <a class="btn ghost" href="#telas">Ver as telas</a>
+      </div>
+      <div class="badges">
+        <span class="badge">Oxide / uMod</span>
+        <span class="badge">Português e inglês</span>
+        <span class="badge">Interface própria (CUI)</span>
+        <span class="badge warn">Em desenvolvimento ativo (beta)</span>
+      </div>
+    </div>
+    <div class="phone" aria-label="Celular do jogo">
+      <div class="scr">
+        <div class="clock mono" style="font-family:var(--head)">21:34</div>
+        <div class="apps">
+          <div><img src="img/iconeRP_cofre.png" alt="">Banco</div>
+          <div><img src="img/iconeRP_empregos.png" alt="">Empregos</div>
+          <div><img src="img/iconeRP_veiculos.png" alt="">Veículos</div>
+          <div><img src="img/iconeRP_taxi.png" alt="">Táxi</div>
+          <div><img src="img/iconeRP_policia.png" alt="">Polícia</div>
+          <div><img src="img/iconeRP_eleicao.png" alt="">Eleição</div>
+        </div>
+        <div class="toast"><b>Banco</b><br>Você recebeu 1.250 RPcoin de Marina.</div>
+      </div>
+      <img class="frame" src="img/celular_moldura.png" alt="">
+    </div>
+  </div>
+</div>
+
+<section id="recursos">
+  <div class="wrap">
+    <div class="eyebrow">Tudo em um</div>
+    <h2>Os sistemas que um servidor RP precisa</h2>
+    <p class="intro">Em vez de juntar dez plugins que não conversam, o EliteRoleplay entrega os sistemas já ligados entre si: o dinheiro do banco paga a loja, o imposto enche o cofre, o cofre paga a polícia.</p>
+    <div class="feat">
+      <div class="card"><img src="img/iconeRP_cofre.png" alt=""><h3>Economia e banco</h3><p>Moeda própria (RPcoin) como item do jogo.</p><ul><li>Banco físico com NPC: saldo, depósito, saque e envio</li><li>Extrato de todas as transações</li><li>Cofre público com impostos e verbas</li></ul></div>
+      <div class="card"><img src="img/iconeRP_empregos.png" alt=""><h3>Profissões</h3><p>Cada ofício tem seu papel na cidade.</p><ul><li>Agência de emprego com troca limitada</li><li>Receitas e aprendizado exclusivos por profissão</li><li>Bônus de coleta, fabricação e cura</li></ul></div>
+      <div class="card"><img src="img/iconeRP_locadora.png" alt=""><h3>Lojas</h3><p>Compra e venda em RPcoin.</p><ul><li>Loja de NPC com tipos prontos de estoque</li><li>Estoque limitado ou ilimitado</li><li>Painel em estilo terminal e caixas de jogadores</li></ul></div>
+      <div class="card"><img src="img/iconeRP_eleicao.png" alt=""><h3>Governo</h3><p>O poder é dos jogadores.</p><ul><li>Eleição de presidente em dois turnos</li><li>Impeachment por votação</li><li>Verba e nomeação de chefes</li></ul></div>
+      <div class="card"><img src="img/iconeRP_policia.png" alt=""><h3>Polícia</h3><p>Corporação completa.</p><ul><li>Delegado, policiais e serviço</li><li>Viaturas, multas e registros</li><li>Luzes e painel da corporação</li></ul></div>
+      <div class="card"><img src="img/iconeRP_hospital.png" alt=""><h3>Hospital</h3><p>Saúde também é emprego.</p><ul><li>Médicos e diretor</li><li>Só médico em serviço levanta os caídos</li><li>Cura e itens médicos por profissão</li></ul></div>
+      <div class="card"><img src="img/iconeRP_veiculos.png" alt=""><h3>Veículos</h3><p>Do aluguel ao documento.</p><ul><li>Locadora, táxi e oficina do mecânico</li><li>Chassi, placa e venda entre jogadores</li><li>Trava com tecla, combustível e velocímetro</li></ul></div>
+      <div class="card"><img src="img/iconeRP_taxi.png" alt=""><h3>Táxi</h3><p>Corridas entre jogadores.</p><ul><li>Carro alugado com dano guardado</li><li>Tarifa e marcador no mapa</li><li>Rádio instalado no carro</li></ul></div>
+      <div class="card"><img src="img/iconeRP_posto.png" alt=""><h3>Bocas e facções</h3><p>Território e PvP.</p><ul><li>Captura por tempo com barra na tela</li><li>Facção, ranking e alertas de ataque</li><li>Raio protegido contra construção</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="telas" class="alt">
+  <div class="wrap">
+    <div class="eyebrow">Interface</div>
+    <h2>Interface própria dentro do jogo</h2>
+    <p class="intro">Todas as telas são feitas em CUI do Rust, sem mods no cliente. Os fundos e as cores podem ser trocados na configuração.</p>
+
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-t="loja">Loja</button>
+      <button role="tab" aria-selected="false" data-t="ag">Agência</button>
+      <button role="tab" aria-selected="false" data-t="cofre">Cofre</button>
+      <button role="tab" aria-selected="false" data-t="eleicao">Eleição</button>
+      <button role="tab" aria-selected="false" data-t="pol">Polícia</button>
+      <button role="tab" aria-selected="false" data-t="hosp">Hospital</button>
+      <button role="tab" aria-selected="false" data-t="fac">Facções</button>
+      <button role="tab" aria-selected="false" data-t="boca">Bocas</button>
+    </div>
+
+    <div class="shot on" id="t-loja">
+      <div><div class="screen s-loja">
+        <div class="ttl">Loja do Ferreiro</div>
+        <div class="col l"><h4>Loja vende</h4>
+          <div class="it"><span>Machado de pedra</span><i>x12</i><b>80</b></div>
+          <div class="it"><span>Picareta de ferro</span><i>x6</i><b>240</b></div>
+          <div class="it"><span>Faca de caça</span><i>x20</i><b>45</b></div>
+          <div class="it out"><span>Marreta</span><i>esgotado</i><b>300</b></div>
+          <div class="it"><span>Lança de madeira</span><i>x30</i><b>25</b></div></div>
+        <div class="col r"><h4>Loja compra</h4>
+          <div class="it"><span>Madeira</span><i>até 500</i><b>1</b></div>
+          <div class="it"><span>Pedra</span><i>até 500</i><b>2</b></div>
+          <div class="it"><span>Minério de metal</span><i>até 300</i><b>4</b></div>
+          <div class="it"><span>Enxofre</span><i>até 200</i><b>6</b></div>
+          <div class="it"><span>Tecido</span><i>até 100</i><b>8</b></div></div>
+      </div><div class="cap">Ilustração da tela da loja de NPC</div></div>
+      <div><h3>Loja de NPC</h3><p>Painel em estilo terminal, com venda e compra lado a lado e rolagem.</p>
+        <ul><li>Tipos prontos (recursos, ferramentas e mais) com itens de exemplo</li><li>Até 60 ofertas por loja</li><li>Estoque limitado, ilimitado ou esgotado</li><li>O admin edita itens e preços no jogo</li></ul></div>
+    </div>
+
+    <div class="shot" id="t-ag">
+      <div><div class="screen s-ag">
+        <div class="tt"><small>EMPREGO</small><b>Agência de emprego</b></div>
+        <div class="tick">✓</div><div class="rows">
+          <div class="jr"><div class="jn">Fazendeiro</div><div class="jd">Planta, pesca, caça e cozinha.</div><div class="jb">Escolher</div></div>
+          <div class="jr"><div class="jn">Extrator</div><div class="jd">Madeira, pedra, minério e enxofre.</div><div class="jb">Escolher</div></div>
+          <div class="jr"><div class="jn">Pedreiro</div><div class="jd">Fabrica portas, trancas e móveis.</div><div class="jb">Escolher</div></div>
+          <div class="jr"><div class="jn">Ferreiro</div><div class="jd">Fabrica ferramentas e armas brancas.</div><div class="jb">Escolher</div></div>
+          <div class="jr"><div class="jn">Alfaiate</div><div class="jd">Fabrica roupas e armaduras.</div><div class="jb">Escolher</div></div>
+          <div class="jr"><div class="jn">Médico</div><div class="jd">Fabrica itens médicos.</div><div class="jb">Escolher</div></div>
+          <div class="jr"><div class="jn">Mecânico</div><div class="jd">Cria chassis no elevador e monta veículos.</div><div class="jb me">✓ Sua profissão</div></div>
+        </div>
+      </div><div class="cap">Ilustração da agência de emprego</div></div>
+      <div><h3>Agência de emprego</h3><p>O jogador escolhe a profissão e o servidor passa a respeitá-la.</p>
+        <ul><li>Receitas e aprendizado exclusivos para quem tem o ofício</li><li>Limite de trocas por período, configurável</li><li>Bônus por profissão</li></ul></div>
+    </div>
+
+    <div class="shot" id="t-cofre">
+      <div><div class="screen s-dk s-cofre">
+        <div class="tt">Cofre público</div><div class="sub">Tesouraria da cidade</div>
+        <div class="pnl" style="left:7%;top:30%;width:34%"><h4>Saldo</h4><div class="big">84.320</div><div class="ln" style="margin-top:1cqw"><span>RPcoin em caixa</span><span class="ok">+3.120 hoje</span></div></div>
+        <div class="pnl" style="left:45%;top:30%;width:48%"><h4>Verbas</h4>
+          <div class="ln"><span>Polícia</span><b>15.000</b></div><div class="ln"><span>Hospital</span><b>12.000</b></div><div class="ln"><span>Salários</span><b>8.400</b></div><div class="ln"><span>Obras públicas</span><b>5.000</b></div></div>
+      </div><div class="cap">Ilustração do cofre público</div></div>
+      <div><h3>Cofre e impostos</h3><p>O dinheiro do servidor circula em vez de aparecer do nada.</p>
+        <ul><li>Impostos e taxas alimentam o cofre</li><li>Verbas para as corporações</li><li>Salários por tempo em serviço</li></ul></div>
+    </div>
+
+    <div class="shot" id="t-eleicao">
+      <div><div class="screen s-dk s-eleicao">
+        <div class="tt">Eleição presidencial</div><div class="sub">1º turno · votação aberta</div>
+        <div class="pnl" style="left:7%;top:30%;width:86%">
+          <div class="ln"><span>Helena Duarte</span><b>46%</b></div><div class="bar"><i style="width:46%"></i></div>
+          <div class="ln" style="margin-top:1.4cqw"><span>Marcos Tavares</span><b>38%</b></div><div class="bar"><i style="width:38%"></i></div>
+          <div class="ln" style="margin-top:1.4cqw"><span>Branco / nulo</span><b>16%</b></div><div class="bar"><i style="width:16%;background:#7a8a96"></i></div>
+        </div>
+      </div><div class="cap">Ilustração da eleição</div></div>
+      <div><h3>Eleição e impeachment</h3><p>Voto secreto, candidaturas com taxa e segundo turno quando ninguém passa de 50%.</p>
+        <ul><li>Mínimo de tempo de jogo para votar</li><li>Popup para o presidente eleito</li><li>Avaliação do mandato e votação para depor</li></ul></div>
+    </div>
+
+    <div class="shot" id="t-pol">
+      <div><div class="screen s-dk s-pol">
+        <div class="tt">Polícia</div><div class="sub">Painel do delegado</div>
+        <div class="pnl" style="left:7%;top:30%;width:41%"><h4>Em serviço</h4>
+          <div class="ln"><span>Delegado Ramos</span><span class="tg ok">Ativo</span></div><div class="ln"><span>Policial Silva</span><span class="tg ok">Ativo</span></div><div class="ln"><span>Policial Costa</span><span class="tg gd">Folga</span></div></div>
+        <div class="pnl" style="left:52%;top:30%;width:41%"><h4>Registros</h4>
+          <div class="ln"><span>Multa · excesso de velocidade</span><b>200</b></div><div class="ln"><span>Ocorrência · roubo</span><span class="tg bad">Aberta</span></div><div class="ln"><span>Viatura 02</span><b>Estado 92%</b></div></div>
+      </div><div class="cap">Ilustração do painel da polícia</div></div>
+      <div><h3>Polícia</h3><p>Ferramentas de RP para quem faz cumprir a lei, sem automatizar a punição.</p>
+        <ul><li>Serviço, viaturas e luzes</li><li>Multas e registros de ocorrência</li><li>Dano da viatura guardado e reparo pago pelo cofre</li></ul></div>
+    </div>
+
+    <div class="shot" id="t-hosp">
+      <div><div class="screen s-dk s-hosp">
+        <div class="tt">Hospital</div><div class="sub">Pronto-socorro</div>
+        <div class="pnl" style="left:7%;top:30%;width:41%"><h4>Equipe</h4>
+          <div class="ln"><span>Dra. Moreira (diretora)</span><span class="tg ok">Em serviço</span></div><div class="ln"><span>Dr. Alves</span><span class="tg ok">Em serviço</span></div></div>
+        <div class="pnl" style="left:52%;top:30%;width:41%"><h4>Chamados</h4>
+          <div class="ln"><span>Jogador caído · centro</span><span class="tg bad">Urgente</span></div><div class="ln"><span>Ferido · estrada</span><span class="tg gd">Em atendimento</span></div></div>
+      </div><div class="cap">Ilustração do hospital</div></div>
+      <div><h3>Hospital</h3><p>Médicos dão sentido ao sistema de jogador caído.</p>
+        <ul><li>Só médico em serviço levanta quem caiu (configurável)</li><li>Cura reforçada para quem tem a profissão</li><li>Diretor nomeado pelo presidente</li></ul></div>
+    </div>
+
+    <div class="shot" id="t-fac">
+      <div><div class="screen s-dk s-fac">
+        <div class="tt">Ranking de facções</div><div class="sub">Temporada atual</div>
+        <div class="pnl" style="left:7%;top:30%;width:86%">
+          <div class="ln"><span>1 · Corvos do Norte</span><b>1.840 pts</b></div><div class="bar"><i style="width:92%"></i></div>
+          <div class="ln" style="margin-top:1.2cqw"><span>2 · Irmandade da Ponte</span><b>1.310 pts</b></div><div class="bar"><i style="width:66%"></i></div>
+          <div class="ln" style="margin-top:1.2cqw"><span>3 · Sombra Verde</span><b>870 pts</b></div><div class="bar"><i style="width:44%"></i></div>
+        </div>
+      </div><div class="cap">Ilustração do ranking</div></div>
+      <div><h3>Facções</h3><p>Disputa por território sem renda automática.</p>
+        <ul><li>Pontos por kills, capturas e tempo de domínio</li><li>Pontos só com membros online</li><li>Alerta para a facção inteira</li></ul></div>
+    </div>
+
+    <div class="shot" id="t-boca">
+      <div><div class="screen s-boca">
+        <div class="tt">Boca do Centro</div>
+        <div class="ln" style="top:24%"><span>Dono</span><b>Corvos do Norte</b></div>
+        <div class="ln" style="top:36%"><span>Protegida até</span><b>Sem proteção</b></div>
+        <div class="ln" style="top:48%"><span>Membros online</span><b>4</b></div>
+        <div class="ln" style="top:60%"><span>Raio sem construir</span><b>60 m</b></div>
+      </div>
+      <div class="bocabar"><span>Tomando a boca</span><i></i></div>
+      <div class="cap">Ilustração do painel e da barra de captura</div></div>
+      <div><h3>Bocas</h3><p>Um ponto de disputa com mesa, cama do dono e barra de captura na tela.</p>
+        <ul><li>Captura por tempo com aviso de ataque ao dono</li><li>Dono ausente perde a boca depois de dias</li><li>Marcador no mapa e raio sem construção</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="como">
+  <div class="wrap">
+    <div class="eyebrow">Como funciona</div>
+    <h2>Um ciclo que se alimenta sozinho</h2>
+    <p class="intro">Os sistemas se conectam. Quem trabalha ganha, quem gasta alimenta o cofre, e o cofre sustenta a cidade.</p>
+    <div class="loop">
+      <div><h3>Trabalhar</h3><p>O jogador escolhe uma profissão, coleta, fabrica ou faz corridas.</p></div>
+      <div><h3>Ganhar</h3><p>Vende o que produz nas lojas ou para outros jogadores, em RPcoin.</p></div>
+      <div><h3>Gastar</h3><p>Compra itens, aluga veículos, paga multas e impostos.</p></div>
+      <div><h3>Financiar</h3><p>O cofre público recebe, e o presidente reparte a verba.</p></div>
+      <div><h3>Governar</h3><p>Polícia e hospital funcionam com a verba, e o povo vota em quem manda.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="instalar" class="alt"><span id="comprar"></span>
+  <div class="wrap">
+    <div class="eyebrow">Instalação</div>
+    <h2>Pronto em poucos minutos</h2>
+    <p class="intro">Depois da compra você recebe o arquivo <code>EliteRoleplay.cs</code>. Ele cria as configurações e os arquivos de dados sozinho na primeira vez que carrega.</p>
+    <div class="two">
+      <div class="box"><h3>Passo a passo</h3>
+        <ol>
+          <li>Instale o <b>Oxide / uMod</b> no servidor de Rust.</li>
+          <li>Instale a biblioteca <code>CustomItemDefinitions</code>, usada para registrar o item da moeda.</li>
+          <li>Coloque <code>EliteRoleplay.cs</code> na pasta <code>oxide/plugins</code>.</li>
+          <li>Hospede as imagens da interface (por exemplo, no GitHub) e ajuste os links na configuração.</li>
+          <li>Dê a você a permissão <code>eliteroleplay.admin</code> e abra o menu no jogo.</li>
+        </ol></div>
+      <div class="box"><h3>Requisitos</h3>
+        <ul>
+          <li>Servidor de Rust com Oxide / uMod</li>
+          <li>Biblioteca CustomItemDefinitions</li>
+          <li>Um lugar para hospedar as imagens (link direto .png ou .jpg)</li>
+          <li>Interface em português e em inglês, por jogador</li>
+        </ul>
+        <div class="note"><b>Estado do projeto:</b> o plugin está em desenvolvimento ativo. Vários sistemas ainda estão em teste, então use primeiro em um servidor de testes e acompanhe as atualizações.</div></div>
+    </div>
+    <div class="actions" style="margin-top:34px">
+      <a class="btn" id="dl-main" href="#">Comprar o plugin</a>
+      <a class="btn ghost" id="repo" href="#">Tirar dúvidas no Discord</a>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="eyebrow">Dúvidas</div>
+    <h2>Perguntas frequentes</h2>
+    <details><summary>Funciona em qualquer servidor de Rust?</summary><p>Em servidores com Oxide / uMod e a biblioteca CustomItemDefinitions. O plugin foi pensado para servidores de roleplay.</p></details>
+    <details><summary>Preciso configurar tudo antes de usar?</summary><p>Não. Os valores padrão já deixam os sistemas funcionando. A configuração serve para ajustar preços, tempos, imagens e regras ao seu servidor.</p></details>
+    <details><summary>Posso mudar os preços, os fundos e as cores?</summary><p>Sim. Os valores ficam no arquivo de configuração e muitos podem ser editados dentro do jogo pelo menu de administrador.</p></details>
+    <details><summary>Os jogadores precisam instalar algo?</summary><p>Não. A interface é feita com os recursos do próprio Rust e aparece para todos sem mods no cliente.</p></details>
+    <details><summary>Dá para usar só alguns sistemas?</summary><p>Vários sistemas têm opção para ligar e desligar na configuração. Os que dependem de outros (por exemplo, o cofre e a polícia) funcionam melhor juntos.</p></details>
+    <details><summary>O plugin está pronto para produção?</summary><p>Ele está em desenvolvimento ativo e parte dos sistemas ainda passa por testes. Teste em um servidor de desenvolvimento antes de colocar no ar.</p></details>
+  </div>
+</section>
+
+<section class="cta-band alt">
+  <div class="wrap">
+    <h2>Monte a sua cidade</h2>
+    <p class="intro" style="margin-left:auto;margin-right:auto">Fale com o criador, acompanhe as novidades e sugira recursos.</p>
+    <div class="actions">
+      <a class="btn" id="dl-end" href="#">Comprar o plugin</a>
+      <a class="btn ghost" id="discord" href="#">Entrar no Discord</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="ano"></span> EliteRoleplay · criado por <span id="autor">Alisson</span>.</div>
+    <div>Rust é marca da Facepunch Studios. Este projeto é independente e não é afiliado a ela.</div>
+  </div>
+</footer>
+
+<script>
+/* ====== EDITE AQUI ====== */
+var SITE = {
+  autor: "Alisson",
+  comprar: "https://SEU-LINK-DE-COMPRA",   // link da página de compra (Codefling, Hotmart, Kiwify, Payhip...)
+  discord: "https://discord.gg/SEU-CONVITE"                              // convite do Discord
+};
+/* ======================== */
+(function(){
+  ['dl-top','dl-hero','dl-main','dl-end'].forEach(function(id){ var e=document.getElementById(id); if(e) e.href=SITE.comprar; });
+  document.getElementById('repo').href = SITE.discord;
+  document.getElementById('discord').href = SITE.discord;
+  document.getElementById('autor').textContent = SITE.autor;
+  document.getElementById('ano').textContent = new Date().getFullYear();
+
+  var tabs = document.querySelectorAll('.tabs button'), shots = document.querySelectorAll('.shot');
+  tabs.forEach(function(b){
+    b.addEventListener('click', function(){
+      tabs.forEach(function(x){ x.setAttribute('aria-selected', x===b ? 'true' : 'false'); });
+      shots.forEach(function(s){ s.classList.toggle('on', s.id === 't-' + b.getAttribute('data-t')); });
+    });
+  });
+})();
+</script>
+</body>
+</html>
